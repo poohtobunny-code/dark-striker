@@ -1,0 +1,352 @@
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompat Rabiab — Football Zone</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a0f;
+  --surface:#111118;
+  --card:#16161f;
+  --border:#1e1e2e;
+  --accent:#00e5a0;
+  --accent2:#ff4b6e;
+  --text:#e8e8f0;
+  --muted:#555570;
+  --glow:0 0 20px rgba(0,229,160,0.25);
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;overflow-x:hidden;cursor:none;}
+
+/* custom cursor */
+#cursor{position:fixed;width:10px;height:10px;border-radius:50%;background:var(--accent);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.2s,height 0.2s;}
+#cursor-ring{position:fixed;width:36px;height:36px;border-radius:50%;border:1.5px solid rgba(0,229,160,0.4);pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all 0.12s ease;}
+body:hover #cursor{opacity:1;}
+
+/* background grid */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(0,229,160,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,160,0.03) 1px,transparent 1px);
+  background-size:48px 48px;pointer-events:none;z-index:0;
+}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:18px 40px;background:rgba(10,10,15,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--accent);text-shadow:var(--glow);}
+.nav-links{display:flex;gap:32px;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-family:'DM Mono',monospace;letter-spacing:1px;transition:color 0.2s;}
+.nav-links a:hover{color:var(--accent);}
+.nav-tag{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:20px;}
+
+/* HERO */
+#hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 20px 80px;z-index:1;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);letter-spacing:4px;text-transform:uppercase;margin-bottom:24px;opacity:0;animation:fadeUp 0.6s 0.2s forwards;}
+.hero-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,12vw,140px);line-height:0.9;letter-spacing:4px;color:#fff;opacity:0;animation:fadeUp 0.7s 0.35s forwards;}
+.hero-name span{color:var(--accent);text-shadow:0 0 40px rgba(0,229,160,0.5);}
+.hero-sub{font-size:16px;color:var(--muted);margin-top:24px;letter-spacing:1px;opacity:0;animation:fadeUp 0.7s 0.5s forwards;}
+.hero-cta{margin-top:48px;display:flex;gap:16px;justify-content:center;opacity:0;animation:fadeUp 0.7s 0.65s forwards;}
+.btn{padding:13px 32px;border-radius:4px;font-size:14px;font-family:'DM Mono',monospace;letter-spacing:1px;text-decoration:none;cursor:pointer;border:none;transition:all 0.2s;}
+.btn-primary{background:var(--accent);color:#0a0a0f;font-weight:500;}
+.btn-primary:hover{box-shadow:0 0 30px rgba(0,229,160,0.5);transform:translateY(-2px);}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
+
+.hero-stats{display:flex;gap:48px;margin-top:64px;opacity:0;animation:fadeUp 0.7s 0.8s forwards;}
+.stat{text-align:center;}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:42px;color:var(--accent);}
+.stat-l{font-size:11px;color:var(--muted);letter-spacing:2px;font-family:'DM Mono',monospace;}
+
+/* divider */
+.section-label{display:flex;align-items:center;gap:16px;margin-bottom:40px;}
+.section-label span{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:3px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* GAME SECTION */
+#game{position:relative;z-index:1;padding:80px 40px;max-width:1200px;margin:0 auto;}
+.game-header{margin-bottom:32px;}
+.game-title{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:3px;line-height:1;}
+.game-title span{color:var(--accent);}
+.game-desc{color:var(--muted);font-size:14px;margin-top:10px;font-family:'DM Mono',monospace;}
+
+.game-wrapper{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--border);box-shadow:0 0 60px rgba(0,0,0,0.6);}
+.game-topbar{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;}
+.topbar-dots{display:flex;gap:7px;}
+.dot{width:11px;height:11px;border-radius:50%;}
+.d1{background:#ff5f57;}.d2{background:#febc2e;}.d3{background:#28c840;}
+.topbar-title{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+.score-badge{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent);letter-spacing:2px;}
+
+/* PITCH */
+#fc{position:relative;width:100%;height:500px;background:#1a5c2b;overflow:hidden;cursor:none;outline:none;}
+#fc::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(0,0,0,0.06) 60px,rgba(0,0,0,0.06) 120px);pointer-events:none;}
+
+.pitch-line{position:absolute;background:rgba(255,255,255,0.35);}
+#ball{position:absolute;width:28px;height:28px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0%,#ddd 50%,#aaa 100%);border:2px solid rgba(0,0,0,0.3);transform:translate(-50%,-50%);pointer-events:none;z-index:10;box-shadow:0 4px 12px rgba(0,0,0,0.5);}
+#gk{position:absolute;transform:translate(-50%,-50%);pointer-events:none;z-index:9;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.gk-head{width:18px;height:18px;border-radius:50%;background:#f4c07a;border:2px solid rgba(0,0,0,0.2);}
+.gk-body{width:22px;height:38px;background:#ff3355;border-radius:6px 6px 4px 4px;border:2px solid rgba(0,0,0,0.2);}
+.gk-name{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-family:'DM Mono',monospace;font-size:9px;color:#fff;white-space:nowrap;background:rgba(0,0,0,0.5);padding:1px 5px;border-radius:3px;}
+.goal-zone{position:absolute;background:rgba(255,255,255,0.07);border:2px dashed rgba(255,255,255,0.5);transform:translate(-50%,-50%);border-radius:4px;pointer-events:none;}
+.goal-post{position:absolute;background:rgba(255,255,255,0.9);pointer-events:none;}
+#kick-flash{position:absolute;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(0,229,160,0.8),transparent);width:70px;height:70px;transform:translate(-50%,-50%) scale(0);opacity:0;z-index:8;}
+#hint-bar{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,0.7);font-size:12px;background:rgba(0,0,0,0.5);padding:5px 16px;border-radius:20px;pointer-events:none;white-space:nowrap;font-family:'DM Mono',monospace;letter-spacing:1px;}
+#goal-popup{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%) scale(0);font-family:'Bebas Neue',sans-serif;font-size:72px;color:var(--accent);text-shadow:0 0 40px rgba(0,229,160,0.8);pointer-events:none;z-index:20;opacity:0;transition:all 0.3s;}
+
+/* SETTINGS PANEL */
+#settings{background:var(--card);border-top:1px solid var(--border);padding:20px 28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;}
+.setting-group h4{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:12px;}
+.ctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.ctrl label{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;}
+.ctrl-right{display:flex;align-items:center;gap:8px;}
+.ctrl input[type=range]{width:90px;accent-color:var(--accent);}
+.ctrl-val{font-size:11px;color:var(--text);font-family:'DM Mono',monospace;min-width:24px;text-align:right;}
+
+/* ABOUT SECTION */
+#about{position:relative;z-index:1;padding:80px 40px;max-width:1200px;margin:0 auto;}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-top:40px;}
+.about-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;transition:border-color 0.3s;}
+.about-card:hover{border-color:var(--accent);}
+.card-icon{font-size:28px;margin-bottom:14px;}
+.card-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:8px;}
+.card-text{font-size:14px;color:var(--muted);line-height:1.8;}
+
+/* FOOTER */
+footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:32px 40px;display:flex;align-items:center;justify-content:space-between;}
+.footer-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--accent);}
+.footer-copy{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<nav>
+  <div class="nav-logo">PR</div>
+  <div class="nav-links">
+    <a href="#game">Play</a>
+    <a href="#about">About</a>
+  </div>
+  <div class="nav-tag">⚽ v1.0</div>
+</nav>
+
+<section id="hero">
+  <div class="hero-eyebrow">// created by</div>
+  <h1 class="hero-name">PROMPAT<br><span>RABIAB</span></h1>
+  <p class="hero-sub">Football Game · Dark Mode · Built for fun</p>
+  <div class="hero-cta">
+    <a href="#game" class="btn btn-primary">Play Now</a>
+    <a href="#about" class="btn btn-ghost">About</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-n" id="total-goals">0</div><div class="stat-l">Goals Scored</div></div>
+    <div class="stat"><div class="stat-n">1</div><div class="stat-l">Game Mode</div></div>
+    <div class="stat"><div class="stat-n">∞</div><div class="stat-l">Replays</div></div>
+  </div>
+</section>
+
+<section id="game">
+  <div class="game-header">
+    <div class="section-label"><span>// game zone</span></div>
+    <h2 class="game-title">FOOTBALL <span>ZONE</span></h2>
+    <p class="game-desc">click to nudge · press E to kick · beat the keeper</p>
+  </div>
+  <div class="game-wrapper">
+    <div class="game-topbar">
+      <div class="topbar-dots"><div class="dot d1"></div><div class="dot d2"></div><div class="dot d3"></div></div>
+      <div class="topbar-title">prompat.football.game</div>
+      <div class="score-badge">GOALS: <span id="gc">0</span></div>
+    </div>
+    <div id="fc" tabindex="0">
+      <div id="ball"></div>
+      <div id="gk">
+        <div class="gk-name">GK</div>
+        <div class="gk-head"></div>
+        <div class="gk-body"></div>
+      </div>
+      <div class="goal-zone" id="gz"></div>
+      <div id="kick-flash"></div>
+      <div id="goal-popup">GOAL!</div>
+      <div id="hint-bar">[ click ] nudge &nbsp;·&nbsp; [ E ] kick &nbsp;·&nbsp; score!</div>
+    </div>
+    <div id="settings">
+      <div class="setting-group">
+        <h4>// goal position</h4>
+        <div class="ctrl"><label>X axis</label><div class="ctrl-right"><input type="range" id="gz-x" min="5" max="95" value="95"><span class="ctrl-val" id="gz-x-v">95</span></div></div>
+        <div class="ctrl"><label>Y axis</label><div class="ctrl-right"><input type="range" id="gz-y" min="10" max="90" value="50"><span class="ctrl-val" id="gz-y-v">50</span></div></div>
+        <div class="ctrl"><label>Size</label><div class="ctrl-right"><input type="range" id="gz-s" min="40" max="180" value="90"><span class="ctrl-val" id="gz-s-v">90</span></div></div>
+      </div>
+      <div class="setting-group">
+        <h4>// goalkeeper</h4>
+        <div class="ctrl"><label>GK X</label><div class="ctrl-right"><input type="range" id="gk-x" min="5" max="95" value="88"><span class="ctrl-val" id="gk-x-v">88</span></div></div>
+        <div class="ctrl"><label>GK Y</label><div class="ctrl-right"><input type="range" id="gk-y" min="10" max="90" value="50"><span class="ctrl-val" id="gk-y-v">50</span></div></div>
+        <div class="ctrl"><label>Speed</label><div class="ctrl-right"><input type="range" id="gk-spd" min="1" max="10" value="3"><span class="ctrl-val" id="gk-spd-v">3</span></div></div>
+      </div>
+      <div class="setting-group">
+        <h4>// ball</h4>
+        <div class="ctrl"><label>Size</label><div class="ctrl-right"><input type="range" id="bs" min="16" max="52" value="28"><span class="ctrl-val" id="bs-v">28</span></div></div>
+        <div class="ctrl"><label>Friction</label><div class="ctrl-right"><input type="range" id="fric" min="90" max="99" value="97"><span class="ctrl-val" id="fric-v">97</span></div></div>
+        <div class="ctrl"><label>Kick power</label><div class="ctrl-right"><input type="range" id="kpow" min="8" max="30" value="18"><span class="ctrl-val" id="kpow-v">18</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="section-label"><span>// about this page</span></div>
+  <div class="about-grid">
+    <div class="about-card">
+      <div class="card-icon">⚽</div>
+      <div class="card-title">The Game</div>
+      <p class="card-text">A simple football game built entirely in the browser. Click to nudge the ball, press E to kick it toward the goal, and score past the AI goalkeeper. Fully customizable — move the goal anywhere, resize it, tweak the keeper's speed.</p>
+    </div>
+    <div class="about-card">
+      <div class="card-icon">👤</div>
+      <div class="card-title">About Me</div>
+      <p class="card-text">Hey, I'm Prompat Rabiab. I built this page just for fun. Football is life, and building things on the web is how I express that. No frameworks, no libraries — just pure HTML, CSS & JS.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-name">PROMPAT RABIAB</div>
+  <div class="footer-copy">// made with ⚽ & code</div>
+</footer>
+
+<script>
+// cursor
+const cur=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+document.addEventListener('mousemove',e=>{
+  cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';
+  ring.style.left=e.clientX+'px';ring.style.top=e.clientY+'px';
+});
+document.addEventListener('mousedown',()=>{cur.style.width='6px';cur.style.height='6px';});
+document.addEventListener('mouseup',()=>{cur.style.width='10px';cur.style.height='10px';});
+
+// game
+const fc=document.getElementById('fc');
+const ball=document.getElementById('ball');
+const gkEl=document.getElementById('gk');
+const gz=document.getElementById('gz');
+const flash=document.getElementById('kick-flash');
+const gcEl=document.getElementById('gc');
+const totalGoals=document.getElementById('total-goals');
+const popup=document.getElementById('goal-popup');
+
+let bx,by,vx=0,vy=0,goals=0;
+let gkX=88,gkY=50,gzX=95,gzY=50,gzS=90;
+let bSize=28,friction=0.97,kickPow=18,gkSpd=3;
+
+function W(){return fc.clientWidth;}function H(){return fc.clientHeight;}
+
+function updateGZ(){
+  gz.style.left=(W()*gzX/100)+'px';gz.style.top=(H()*gzY/100)+'px';
+  gz.style.width='14px';gz.style.height=gzS+'px';
+}
+function updateGK(){
+  gkEl.style.left=(W()*gkX/100)+'px';gkEl.style.top=(H()*gkY/100)+'px';
+}
+function drawPitch(){
+  fc.querySelectorAll('.pitch-line,.pitch-circle').forEach(e=>e.remove());
+  const mk=(t,l,w,h)=>{const d=document.createElement('div');d.className='pitch-line';Object.assign(d.style,{top:t,left:l,width:w,height:h});fc.insertBefore(d,fc.firstChild);};
+  mk('0','0','100%','2px');mk((H()-2)+'px','0','100%','2px');
+  mk('0','0','2px',H()+'px');mk('0',(W()-2)+'px','2px',H()+'px');
+  mk('0',(W()/2-1)+'px','2px',H()+'px');mk((H()/2-1)+'px','0',W()+'px','2px');
+  const c=document.createElement('div');c.className='pitch-circle';
+  Object.assign(c.style,{position:'absolute',left:W()/2-60+'px',top:H()/2-60+'px',width:'120px',height:'120px',border:'2px solid rgba(255,255,255,0.3)',borderRadius:'50%',pointerEvents:'none'});
+  fc.insertBefore(c,fc.firstChild);
+}
+
+function loop(){
+  const w=W(),h=H(),r=bSize/2;
+  vx*=friction;vy*=friction;
+  if(Math.abs(vx)<0.05)vx=0;if(Math.abs(vy)<0.05)vy=0;
+  bx+=vx;by+=vy;
+  if(bx-r<0){bx=r;vx=Math.abs(vx)*0.65;}
+  if(bx+r>w){bx=w-r;vx=-Math.abs(vx)*0.65;}
+  if(by-r<0){by=r;vy=Math.abs(vy)*0.65;}
+  if(by+r>h){by=h-r;vy=-Math.abs(vy)*0.65;}
+
+  // GK collision
+  const gkCX=w*gkX/100,gkCY=h*gkY/100;
+  const dx=bx-gkCX,dy=by-gkCY;
+  if(Math.abs(dx)<r+12&&Math.abs(dy)<r+22){
+    const ox=r+12-Math.abs(dx),oy=r+22-Math.abs(dy);
+    if(ox<oy){vx=dx>0?Math.abs(vx)+3:-Math.abs(vx)-3;bx+=dx>0?ox:-ox;}
+    else{vy=dy>0?Math.abs(vy)+3:-Math.abs(vy)-3;by+=dy>0?oy:-oy;}
+  }
+
+  // goal check
+  const gzCX=w*gzX/100,gzCY=h*gzY/100;
+  if(bx+r>gzCX-8&&bx-r<gzCX+8&&by+r>gzCY-gzS/2&&by-r<gzCY+gzS/2){
+    goals++;gcEl.textContent=goals;totalGoals.textContent=goals;
+    bx=w/2;by=h/2;vx=0;vy=0;
+    showGoal();
+  }
+
+  ball.style.left=bx+'px';ball.style.top=by+'px';
+  ball.style.width=bSize+'px';ball.style.height=bSize+'px';
+  ball.style.marginLeft=(-bSize/2)+'px';ball.style.marginTop=(-bSize/2)+'px';
+
+  // GK AI
+  const tyY=(by/h)*100;
+  gkY+=(tyY-gkY)*(gkSpd*0.01);
+  gkY=Math.max(10,Math.min(90,gkY));
+  updateGK();
+  requestAnimationFrame(loop);
+}
+
+function showGoal(){
+  popup.style.transform='translate(-50%,-50%) scale(1)';popup.style.opacity='1';
+  setTimeout(()=>{popup.style.transform='translate(-50%,-50%) scale(0)';popup.style.opacity='0';},1000);
+}
+
+fc.addEventListener('click',e=>{
+  const r=fc.getBoundingClientRect();
+  const mx=e.clientX-r.left,my=e.clientY-r.top;
+  const dx=mx-bx,dy=my-by,d=Math.hypot(dx,dy)||1;
+  vx+=(dx/d)*5;vy+=(dy/d)*5;
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='e'||e.key==='E'){
+    e.preventDefault();
+    const w=W(),h=H();
+    const dx=w*gzX/100-bx,dy=h*gzY/100-by,d=Math.hypot(dx,dy)||1;
+    vx=(dx/d)*kickPow;vy=(dy/d)*kickPow;
+    flash.style.left=bx+'px';flash.style.top=by+'px';
+    flash.style.transition='none';flash.style.transform='translate(-50%,-50%) scale(0)';flash.style.opacity='0.9';
+    requestAnimationFrame(()=>{
+      flash.style.transition='transform 0.35s ease-out,opacity 0.35s';
+      flash.style.transform='translate(-50%,-50%) scale(2.5)';flash.style.opacity='0';
+    });
+  }
+});
+
+function bindSlider(id,setter){
+  const el=document.getElementById(id);
+  const val=document.getElementById(id+'-v');
+  el.addEventListener('input',()=>{if(val)val.textContent=el.value;setter(+el.value);});
+}
+bindSlider('gz-x',v=>{gzX=v;updateGZ();});
+bindSlider('gz-y',v=>{gzY=v;updateGZ();});
+bindSlider('gz-s',v=>{gzS=v;updateGZ();});
+bindSlider('gk-x',v=>{gkX=v;updateGK();});
+bindSlider('gk-y',v=>{gkY=v;updateGK();});
+bindSlider('gk-spd',v=>gkSpd=v);
+bindSlider('bs',v=>bSize=v);
+bindSlider('fric',v=>friction=v/100);
+bindSlider('kpow',v=>kickPow=v);
+
+window.addEventListener('resize',()=>{drawPitch();updateGZ();updateGK();});
+drawPitch();
+bx=W()/2;by=H()/2;
+updateGZ();updateGK();
+loop();
+</script>
+</body>
+</html>
