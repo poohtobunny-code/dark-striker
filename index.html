@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Striker FC</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Dark%20Striker%20FC%22%2C%22short_name%22%3A%22Striker%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%230f172a%22%2C%22theme_color%22%3A%22%233b82f6%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F5323%2F5323985.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fpng%22%7D%5D%7D">
+    
+    <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/5323/5323985.png">
+
+    <style>
+        body {
+            background-color: #0b0f19;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        canvas {
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
+        }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen flex flex-col items-center justify-center p-4">
+
+    <header class="w-full max-w-5xl flex justify-between items-center mb-6 px-4">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-500/30">
+                <img src="https://cdn-icons-png.flaticon.com/512/5323/5323985.png" alt="Logo" class="w-8 h-8">
+            </div>
+            <h1 class="text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
+                DARK STRIKER <span class="text-slate-400 font-light text-sm border border-slate-700 px-2 py-0.5 rounded-full ml-2">v1.0</span>
+            </h1>
+        </div>
+        <div class="flex gap-6 text-sm bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-xl border border-slate-800">
+            <div>Score: <span id="scoreBadge" class="text-emerald-400 font-bold text-lg">0</span></div>
+            <div class="border-l border-slate-700 pl-4">Saves: <span id="savesBadge" class="text-rose-400 font-bold text-lg">0</span></div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-4 gap-6 px-4">
+        
+        <div class="bg-slate-900/60 backdrop-blur-md p-5 rounded-2xl border border-slate-800/80 flex flex-col gap-5 shadow-xl lg:col-span-1">
+            <div>
+                <h2 class="text-sm font-semibold tracking-wider uppercase text-slate-400 mb-3">Customization</h2>
+                
+                <div class="mb-4">
+                    <label class="text-xs text-slate-400 flex justify-between mb-1">
+                        <span>Goal X Position</span>
+                        <span id="goalXVal" class="text-blue-400">Centered</span>
+                    </label>
+                    <input type="range" id="goalXSlider" min="50" max="650" value="350" 
+                           class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                </div>
+
+                <div>
+                    <label class="text-xs text-slate-400 flex justify-between mb-1">
+                        <span>GK Speed (Difficulty)</span>
+                        <span id="gkSpeedVal" class="text-blue-400">Normal</span>
+                    </label>
+                    <input type="range" id="gkSpeedSlider" min="1" max="6" value="3" step="0.5"
+                           class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                </div>
+            </div>
+
+            <hr class="border-slate-800">
+
+            <div>
+                <h2 class="text-sm font-semibold tracking-wider uppercase text-slate-400 mb-2">Controls</h2>
+                <ul class="text-xs text-slate-400 space-y-2">
+                    <li class="flex items-center gap-2">
+                        <kbd class="bg-slate-800 text-slate-200 px-2 py-0.5 rounded border border-slate-700 shadow shadow-black">Touch / Click</kbd> Nudge ball forward
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <kbd class="bg-slate-800 text-slate-200 px-2 py-0.5 rounded border border-slate-700 shadow shadow-black">E Key</kbd> Power Kick towards net
+                    </li>
+                </ul>
+            </div>
+
+            <button id="resetBtn" class="mt-auto w-full py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-[0.98] transition rounded-xl font-medium text-sm text-slate-300 border border-slate-700/50">
+                Reset Ball Position
+            </button>
+        </div>
+
+        <div class="lg:col-span-3 flex flex-col justify-center items-center relative">
+            <canvas id="gameCanvas" width="700" height="450" class="rounded-2xl border border-slate-800 w-full max-w-full aspect-[70/45]"></canvas>
+            
+            <div id="toast" class="absolute hidden top-1/2 transform -translate-y-1/2 px-6 py-3 rounded-2xl font-black text-2xl uppercase tracking-widest pointer-events-none transition scale-75 duration-200">
+                GOAL!
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // UI Elements
+        const goalXSlider = document.getElementById('goalXSlider');
+        const goalXVal = document.getElementById('goalXVal');
+        const gkSpeedSlider = document.getElementById('gkSpeedSlider');
+        const gkSpeedVal = document.getElementById('gkSpeedVal');
+        const scoreBadge = document.getElementById('scoreBadge');
+        const savesBadge = document.getElementById('savesBadge');
+        const resetBtn = document.getElementById('resetBtn');
+        const toast = document.getElementById('toast');
+
+        // Game State
+        let score = 0;
+        let saves = 0;
+
+        // Entities Setup
+        const ball = {
+            x: canvas.width / 2,
+            y: canvas.height - 80,
+            radius: 14,
+            vx: 0,
+            vy: 0,
+            friction: 0.98,
+            color: '#ffffff'
+        };
+
+        const goal = {
+            x: 350, // center x
+            y: 30,  // top padding
+            width: 140,
+            height: 20
+        };
+
+        const gk = {
+            x: 350,
+            y: 55,
+            width: 50,
+            height: 12,
+            speed: 3,
+            color: '#f43f5e' // neon red
+        };
+
+        // Handle Goal Position Slider Changes
+        goalXSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            goal.x = val;
+            goalXVal.textContent = val === 350 ? "Centered" : `${val}px`;
+        });
+
+        // Handle Goalkeeper Difficulty Changes
+        gkSpeedSlider.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            gk.speed = val;
+            if(val <= 2) gkSpeedVal.textContent = "Easy";
+            else if(val <= 4) gkSpeedVal.textContent = "Normal";
+            else gkSpeedVal.textContent = "Hardcore";
+        });
+
+        // Reset functions
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height - 80;
+            ball.vx = 0;
+            ball.vy = 0;
+        }
+        resetBtn.addEventListener('click', resetBall);
+
+        // Show goal or save message banner
+        function showToast(text, isGoal) {
+            toast.textContent = text;
+            toast.className = `absolute top-1/2 transform -translate-y-1/2 px-6 py-3 rounded-2xl font-black text-3xl uppercase tracking-widest pointer-events-none transition duration-200 block ${
+                isGoal ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg shadow-emerald-500/20' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-lg shadow-rose-500/20'
+            }`;
+            setTimeout(() => { toast.classList.replace('block', 'hidden'); }, 1200);
+        }
+
+        // --- Interaction Logic ---
+
+        // Touch / Click Nudge
+        function handleInteraction(inputX, inputY) {
+            const dist = Math.hypot(ball.x - inputX, ball.y - inputY);
+            // If user touches close to or on the ball
+            if (dist < ball.radius + 25) {
+                // Calculate direction away from touch pointer
+                let angle = Math.atan2(ball.y - inputY, ball.x - inputX);
+                
+                // If directly on top, force it forward/upward
+                if (dist < 5) { angle = -Math.PI / 2; }
+
+                ball.vx += Math.cos(angle) * 4;
+                ball.vy += Math.sin(angle) * 4 - 2; // Extra nudge forward
+            }
+        }
+
+        // Mouse Click Event mapping
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const clickY = (e.clientY - rect.top) * (canvas.height / rect.height);
+            handleInteraction(clickX, clickY);
+        });
+
+        // Touch Event mapping (Mobile compatible)
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const touch = e.touches[0];
+            const touchX = (touch.clientX - rect.left) * (canvas.width / rect.width);
+            const touchY = (touch.clientY - rect.top) * (canvas.height / rect.height);
+            handleInteraction(touchX, touchY);
+        }, { passive: false });
+
+        // Keyboard 'E' to Power Kick
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'e' || e.key === 'E') {
+                // Calculate target angle to the center of the current goal position
+                const targetX = goal.x;
+                const targetY = goal.y;
+                
+                const angle = Math.atan2(targetY - ball.y, targetX - ball.x);
+                
+                // Add powerful forward velocity towards net
+                ball.vx = Math.cos(angle) * 14;
+                ball.vy = Math.sin(angle) * 14;
+            }
+        });
+
+        // --- Game Engine Loops ---
+
+        function update() {
+            // Apply velocities
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            // Apply friction physics slowing it down gradually
+            ball.vx *= ball.friction;
+            ball.vy *= ball.friction;
+
+            // Side Arena boundary physics walls
+            if (ball.x - ball.radius < 0) {
+                ball.x = ball.radius;
+                ball.vx *= -0.8;
+            }
+            if (ball.x + ball.radius > canvas.width) {
+                ball.x = canvas.width - ball.radius;
+                ball.vx *= -0.8;
+            }
+            if (ball.y + ball.radius > canvas.height) {
+                ball.y = canvas.height - ball.radius;
+                ball.vy *= -0.8;
+            }
+
+            // Simple Smart AI Goalkeeper tracking the ball inline with goal boundaries
+            const targetGkX = Math.max(goal.x - goal.width/2, Math.min(goal.x + goal.width/2, ball.x));
+            if (gk.x + gk.width / 2 < targetGkX) {
+                gk.x += gk.speed;
+            } else if (gk.x + gk.width / 2 > targetGkX) {
+                gk.x -= gk.speed;
+            }
+
+            // Collision check: Goalkeeper saves the ball
+            if (ball.x + ball.radius > gk.x && 
+                ball.x - ball.radius < gk.x + gk.width &&
+                ball.y - ball.radius < gk.y + gk.height && 
+                ball.y + ball.radius > gk.y) {
+                
+                ball.vy = Math.abs(ball.vy) * 1.2 + 2; // Bounce ball cleanly back out downfield
+                ball.vx += (Math.random() - 0.5) * 4;  // Deflect random angle sideways
+                saves++;
+                savesBadge.textContent = saves;
+                showToast("SAVED!", false);
+            }
+
+            // Scoring check: Ball passes cleanly inside the Net parameters
+            if (ball.y - ball.radius <= goal.y + goal.height) {
+                if (ball.x >= goal.x - goal.width / 2 && ball.x <= goal.x + goal.width / 2) {
+                    score++;
+                    scoreBadge.textContent = score;
+                    showToast("GOAL!", true);
+                    resetBall();
+                } else if (ball.y - ball.radius < 0) {
+                    // Missed wide wall boundary reset out behind net
+                    ball.y = ball.radius;
+                    ball.vy *= -0.8;
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw field line features (Pitch center line circle)
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 70, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Draw Dynamic Movable Goal Post Zone Graphic
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.15)';
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.rect(goal.x - goal.width / 2, goal.y, goal.width, goal.height);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Goal posts net pattern lines accent detail
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)';
+            ctx.lineWidth = 1;
+            for(let i = goal.x - goal.width/2; i <= goal.x + goal.width/2; i+=10){
+                ctx.beginPath(); ctx.moveTo(i, goal.y); ctx.lineTo(i, goal.y + goal.height); ctx.stroke();
+            }
+
+            // Draw Responsive AI Goalkeeper
+            ctx.fillStyle = gk.color;
+            ctx.shadowColor = gk.color;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.roundRect(gk.x, gk.y, gk.width, gk.height, 4);
+            ctx.fill();
+            ctx.shadowBlur = 0; // reset glow tracking
+
+            // Draw Dynamic Game Ball Element
+            ctx.fillStyle = ball.color;
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 12;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0; // reset canvas context pointer states
+
+            // Inner styling lines accent layer on ball
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI, true);
+            ctx.stroke();
+        }
+
+        // Loop Runner orchestrator frame pipeline
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Fire on system initiation initialization
+        gameLoop();
+    </script>
+</body>
+</html>
